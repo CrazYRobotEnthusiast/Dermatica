@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Classification</title>
+</head>
+<body>
+  <div id="result"></div>
+   <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/addons/p5.dom.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
+  <script type="text/javascript">
+    let classifier;
+    // Model URL
+    let imageModelURL = 'https://teachablemachine.withgoogle.com/models/p5bD7CsxE/';
+
+    // Video
+    // let video;
+    // let flippedVideo;
+    // // To store the classification
+    // let label = "";
+
+    // // Load the model first
+    // function preload() {
+    //   classifier = ml5.imageClassifier(imageModelURL + 'model.json');
+    // }
+
+    // function setup() {
+    //   createCanvas(320, 260);
+    //   // Create the video
+    //   video = createCapture(VIDEO);
+    //   video.size(320, 240);
+    //   video.hide();
+
+    //   flippedVideo = ml5.flipImage(video);
+    //   // Start classifying
+    //   classifyVideo();
+    // }
+
+    // function draw() {
+    //   background(0);
+    //   // Draw the video
+    //   image(flippedVideo, 0, 0);
+
+    //   // Draw the label
+    //   fill(255);
+    //   textSize(16);
+    //   textAlign(CENTER);
+    //   text(label, width / 2, height - 4);
+    // }
+
+    // // Get a prediction for the current video frame
+    // function classifyVideo() {
+    //   flippedVideo = ml5.flipImage(video)
+    //   classifier.classify(flippedVideo, gotResult);
+    //   flippedVideo.remove();
+    // }
+
+    // // When we get a result
+    // function gotResult(error, results) {
+    //   // If there is an error
+    //   if (error) {
+    //     console.error(error);
+    //     return;
+    //   }
+    //   // The results are in an array ordered by confidence.
+    //   // console.log(results[0]);
+    //   label = results[0].label;
+    //   // Update the HTML div with the result
+    //   document.getElementById('result').innerText = label;
+    //   // Classify again!
+    //   if (timer <= 0) {
+    //     noLoop(); // Stop draw loop
+    //     classifier.classify(flippedVideo, printResult); // Classify one more time to print final result
+    //   } else {
+    //     classifyVideo(); // Continue classifying
+    //   }
+    // //   classifyVideo();
+    // }
+    let video;
+    let flippedVideo;
+    // To store the classification
+    let label = "";
+    let timer = 60; // Timer set to 60 seconds
+
+    // Load the model first
+    function preload() {
+      classifier = ml5.imageClassifier(imageModelURL + 'model.json');
+    }
+
+    function setup() {
+      createCanvas(320, 260);
+      // Create the video
+      video = createCapture(VIDEO);
+      video.size(320, 240);
+      video.hide();
+
+      flippedVideo = ml5.flipImage(video);
+      // Start classifying
+      classifyVideo();
+      // Start the timer
+      setInterval(updateTimer, 1000); // Update timer every second
+    }
+
+    function draw() {
+      background(0);
+      // Draw the video
+      image(flippedVideo, 0, 0);
+
+      // Draw the label
+      fill(255);
+      textSize(16);
+      textAlign(CENTER);
+      text(label, width / 2, height - 4);
+    }
+
+    // Get a prediction for the current video frame
+    function classifyVideo() {
+      flippedVideo = ml5.flipImage(video)
+      classifier.classify(flippedVideo, gotResult);
+      flippedVideo.remove();
+    }
+
+    // When we get a result
+    function gotResult(error, results) {
+      // If there is an error
+      if (error) {
+        console.error(error);
+        return;
+      }
+      // The results are in an array ordered by confidence.
+      // console.log(results[0]);
+      label = results[0].label;
+      // Update the HTML div with the result
+      document.getElementById('result').innerText = label;
+      // Stop classifying after 60 seconds
+      if (timer <= 0) {
+        noLoop(); // Stop draw loop
+        classifier.classify(flippedVideo, printResult); // Classify one more time to print final result
+      } else {
+        classifyVideo(); // Continue classifying
+      }
+    }
+
+    // Print the final result after 60 seconds
+    function printResult(error, results) {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      label = results[0].label;
+      document.getElementById('result').innerText = label;
+    }
+
+    // Update the timer
+    function updateTimer() {
+      if (timer > 0) {
+        timer--;
+        document.getElementById('timer').innerText = `Time left: ${timer} seconds`;
+      }
+    }
+  </script>
+</body>
+</html>

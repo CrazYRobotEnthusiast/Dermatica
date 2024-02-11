@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Classification</title>
+</head>
+<body>
+  <div id="result"></div>
+
+  <div id="timer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/addons/p5.dom.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
+  <script type="text/javascript">
+    let classifier;
+    // Model URL
+    let imageModelURL = 'https://teachablemachine.withgoogle.com/models/p5bD7CsxE/';
+
+    // Video
+    let video;
+    let flippedVideo;
+    // To store the classification
+    let label = "";
+    let timer = 30; // Timer set to 20 seconds
+    let finalDisease = ""; // To store the final disease
+
+    // Load the model first
+    function preload() {
+      classifier = ml5.imageClassifier(imageModelURL + 'model.json');
+    }
+
+    function setup() {
+      createCanvas(320, 260);
+      // Create the video
+      video = createCapture(VIDEO);
+      video.size(320, 240);
+      video.hide();
+
+      flippedVideo = ml5.flipImage(video);
+      // Start classifying
+      classifyVideo();
+      // Start the timer
+      setInterval(updateTimer, 1000); // Update timer every second
+    }
+    
+    function draw() {
+      background(0);
+      // Draw the video
+      image(flippedVideo, 0, 0);
+
+      // Draw the label
+      fill(255);
+      textSize(16);
+      textAlign(CENTER);
+      text(label, width / 2, height - 4);
+    }
+
+    // Get a prediction for the current video frame
+    function classifyVideo() {
+      flippedVideo = ml5.flipImage(video)
+      classifier.classify(flippedVideo, gotResult);
+      flippedVideo.remove();
+    }
+
+    // When we get a result
+    function gotResult(error, results) {
+      // If there is an error
+      if (error) {
+        console.error(error);
+        return;
+      }
+      // The results are in an array ordered by confidence.
+      // console.log(results[0]);
+      label = results[0].label;
+      // Update the HTML div with the result
+      document.getElementById('result').innerText = label;
+      // Store the final disease after 20 seconds
+      if (timer === 0) {
+        finalDisease = label;
+      }
+      // Stop classifying after 20 seconds
+      if (timer <= 0) {
+        noLoop(); // Stop draw loop
+        printResult();
+      } else {
+        classifyVideo(); // Continue classifying
+      }
+    }
+
+    // Print the final result after 20 seconds
+    function printResult() {
+      let message = "";
+      switch(finalDisease) {
+        case "Melanoma":
+          message =`## Melanoma: Overview & Symptoms
+
+Melanoma is the most serious type of skin cancer, but it's also the least common. It arises from melanocytes, the cells that produce melanin, the pigment that gives skin its color. Early detection and treatment are crucial because advanced melanoma can spread to other organs and become life-threatening.
+
+Overview:
+
+Cause: Primarily caused by ultraviolet (UV) radiation from the sun or tanning beds.
+Risk factors: Fair skin, multiple moles, history of sunburns, family history of melanoma.
+Symptoms: Often appear as changes in existing moles or new skin growths.
+
+Symptoms:
+
+Remember the "ABCDE" rule to help identify potential melanomas:
+
+A - Asymmetry: One half of the mole or lesion doesn't match the other.
+B - Border: The edges are irregular, ragged, or blurred.
+C - Color: Uneven color with shades of brown, black, tan, red, blue, or white.
+D - Diameter: Larger than 6 millimeters (about the size of a pencil eraser).
+E - Evolving: Changes in size, shape, color, or elevation over time.
+
+Other possible signs:
+
+* A sore that doesn't heal.
+* Bleeding or oozing from a mole or lesion.
+* Itching or tenderness around a mole or lesion.
+* A new mole that looks different from your others (the "ugly duckling" sign).
+
+It's important to remember:
+
+* Not all melanomas follow the ABCDE rule, so any unusual changes in your skin warrant a doctor's visit.
+* Early detection and treatment significantly improve the chances of successful treatment.
+* Regular skin checks by a dermatologist are crucial, especially for individuals with high risk factors.
+Caution:This is an estimated guess by our ML model,the final diagonse should be done by medical professional
+`;
+          break;
+        case "Eczema":
+          message = `Eczema, also known as atopic dermatitis, is a common chronic inflammatory skin condition characterized by dry, itchy, and inflamed skin. It is not contagious and can affect people of all ages, though it often starts in childhood. While there is no cure for eczema, there are ways to manage the symptoms and prevent flare-ups.
+
+Symptoms of eczema:
+
+Dry, itchy skin: This is the most common symptom of eczema and can be severe. Scratching can worsen the itching and lead to infection.
+[Image of Dry, itchy skin eczema]
+Red, inflamed skin: The affected areas of skin may be red, inflamed, and swollen.
+
+Blisters: Small, fluid-filled blisters may form on the skin. These blisters can break open and weep clear fluid.
+
+Cracked, bleeding skin: Scratching and rubbing can damage the skin, leading to cracking and bleeding.
+
+Thickened skin: Over time, the skin may become thickened and leathery.
+
+Scaly patches: The affected areas of skin may be covered in scales.
+
+Overview of eczema:
+The exact cause of eczema is unknown, but it is thought to be a combination of genetic and environmental factors. People with eczema often have a family history of allergies or other atopic conditions, such as asthma or hay fever.
+
+Triggers of eczema flare-ups:
+Dry skin: Dry, cold weather can worsen eczema symptoms.
+Irritants: Soaps, detergents, and other harsh chemicals can irritate the skin and trigger a flare-up.
+Allergens: Dust mites, pet dander, pollen, and food allergies can trigger flare-ups in some people.
+Stress: Stress can worsen eczema symptoms.
+
+Treatment for eczema:
+There is no cure for eczema, but there are treatments that can help manage the symptoms and prevent flare-ups. These treatments may include:
+Moisturizers: Regular use of a moisturizer can help keep the skin hydrated and prevent flare-ups.
+Corticosteroids: Topical corticosteroids are medications that can help reduce inflammation and itching.
+Immunomodulators: These medications help regulate the immune system and can be used for moderate to severe eczema.
+Light therapy: Ultraviolet light therapy can help reduce inflammation and itching.
+ Dupilumab: This is a biologic medication that is injected and can help control moderate to severe eczema.
+
+If you have eczema, it is important to see a doctor or dermatologist to get a diagnosis and discuss treatment options.
+
+I hope this information is helpful. Please let me know if you have any other questions.
+Caution:This is an estimated guess by our ML model,the final diagonse should be done by medical professional
+`;
+          break;
+        case "Melanocytic Nevi (NV)":
+          message = `## Melanocytic Nevi (NV): Overview & Symptoms
+
+Melanocytic nevi, also commonly known as moles, are growths on the skin made up of melanocytes, the cells that produce pigment. Most nevi are harmless and pose no health risk. However, it's important to be able to recognize them and monitor them for any changes, as some might develop into melanoma, a serious form of skin cancer.
+
+Overview:
+
+Common: Up to 40 moles per person are considered normal.
+Appearance: Vary in size , shape, and color (brown, black, tan, pink). Can be flat, raised, hairy, or smooth.
+Cause: Usually unknown, but genetics and sun exposure play a role.
+Types: Several types exist, including congenital nevi (present at birth), junctional nevi (flat and pigmented), compound nevi (raised with pigment), and dysplastic nevi (atypical appearance).
+
+Symptoms:
+
+Most moles are harmless and require no specific symptoms to watch for. However, it's crucial to monitor any mole for changes, which can be early signs of melanoma. Be aware of the ABCDE rule:
+
+A: Asymmetry - One half doesn't match the other.
+B: Border - Irregular, ragged, or blurred edges.
+C: Color - Uneven with shades of brown, black, tan, red, blue, or white.
+D: Diameter - Larger than 6 millimeters (about the size of a pencil eraser).
+E: Evolving - Changes in size, shape, color, or elevation over time.
+
+Other warning signs:
+
+* Itching, bleeding, or oozing from a mole.
+* New mole that looks different from your others (the "ugly duckling" sign).
+* Sore that doesn't heal around a mole.
+
+It's important to remember:
+
+* Not all moles that change are cancerous, but it's best to consult a doctor for any suspicious changes.
+* Regular skin self-exams and professional skin checks by a dermatologist are crucial for early detection of melanoma.
+* Sun protection is vital to prevent new nevi and reduce the risk of melanoma.
+
+ Early detection and treatment are key to managing moles and preventing melanoma. Don't hesitate to seek professional advice if you have any concerns about your moles.
+ Caution:This is an estimated guess by our ML model,the final diagonse should be done by medical professional`;
+          break;
+        case "Benign Keratosis-like Lesions (BKL)":
+          message = `## Benign Keratosis-like Lesions (BKL): Overview & Symptoms
+
+Benign keratosis-like lesions (BKL) are a term used to describe a group of non-cancerous skin growths resembling seborrheic keratoses, actinic keratoses, or other benign keratoses. However, BKLs have distinct characteristics that differentiate them from these typical keratoses, making them a category of their own.
+
+Overview:
+
+Cause: Unknown, but may be linked to sun exposure, age, and genetic factors.
+Prevalence: More common in older adults, particularly those with fair skin.
+Appearance: Vary depending on the specific type of BKL but generally share some similarities with classic keratoses:
+    * Flat or slightly raised.
+    * Round or oval shaped.
+    * Smooth or slightly rough surface.
+    * Varying colors such as brown, black, tan, or pink.
+    * Typically less than 1 cm in diameter.
+Types: Several types exist, some with distinct features:
+    * Porokeratosis Mibelli (PM): Waxy, white, or yellowish lesions commonly affecting the legs.
+    * Kyrle disease: Symmetrical lesions found on the extremities and trunk.
+    * Stucco keratosis: Thickened, hyperkeratotic plaques on the extremities.
+    * Follicular keratosis: Rough, bump-like lesions usually seen on the upper arms and thighs.
+
+Symptoms:
+
+BKLs are typically asymptomatic, meaning they don't cause any pain, itching, or other noticeable symptoms. However, some individuals might experience mild irritation or discomfort depending on the location and size of the lesions.
+
+Diagnosis:
+
+Diagnosis of BKLs relies on a dermatological examination followed by a biopsy for confirmation. The biopsy helps rule out other types of skin lesions, including potentially cancerous ones.
+
+Treatment:
+
+BKLs generally don't require treatment as they are benign. However, some individuals might opt for cosmetic removal for aesthetic reasons or if the lesions cause discomfort. Removal options include:
+
+Cryotherapy: Freezing the lesion with liquid nitrogen.
+Curettage: Scraping the lesion with a surgical instrument.
+Laser therapy: Using lasers to vaporize the lesion.
+
+Important Points:
+
+* BKLs are non-cancerous but require proper diagnosis to differentiate them from other skin lesions.
+* They typically cause no symptoms but can be removed for cosmetic reasons.
+* If you notice any suspicious skin growths, consult a dermatologist for proper evaluation.
+
+Disclaimer: This information is intended for general knowledge only and does not constitute medical advice. Please consult a healthcare professional for personalized recommendations.
+Caution:This is an estimated guess by our ML model,the final diagonse should be done by medical professional`;
+          break;
+          case "Atopic Dermatitis":
+          message = `Atopic Dermatitis: Overview & Symptoms
+
+Atopic dermatitis, commonly known as eczema, is a chronic inflammatory skin condition characterized by dry, itchy, and inflamed skin. It's not contagious and can affect people of all ages, but often starts in childhood. While there's no cure, treatments help manage symptoms and prevent flare-ups.
+
+Overview:
+
+- Cause: Unknown, likely combination of genetic and environmental factors.
+- Atopic triad: Often linked to other atopic conditions like asthma and hay fever.
+- Impact: Can be physically and emotionally challenging due to constant itching and visible symptoms.
+
+Symptoms:
+
+- Itching: The most common and bothersome symptom, ranging from mild to severe. Scratching can worsen itching and damage the skin.
+- Dry skin: Lack of moisture makes the skin more susceptible to irritation and flare-ups.
+- Inflammation: Affected areas appear red, inflamed, and swollen.
+- Blisters: Small, fluid-filled blisters may form and ooze clear fluid when broken.
+- Cracked and bleeding skin: Scratching and rubbing can damage the skin, leading to cracks and bleeding.
+- Thickened skin: Over time, the skin may become thickened and leathery.
+- Scaly patches: Affected areas may be covered in scales.
+
+Symptoms may vary depending on:
+
+- Age: Infants and young children often have different symptoms than adults.
+- Type and severity of eczema
+- Individual triggers
+
+Triggers:
+
+- Dry weather: Low humidity can worsen dry skin and eczema symptoms.
+- Irritants: Soaps, detergents, harsh chemicals, and fragrances can irritate the skin.
+- Allergens: Dust mites, pet dander, pollen, and food allergies can trigger flare-ups.
+- Stress: Stress can worsen eczema symptoms.
+- Sweat: Excessive sweating can irritate the skin and worsen symptoms.
+
+Diagnosis:
+
+- Doctor diagnoses eczema based on medical history, physical examination, and sometimes patch tests to identify allergens.
+
+Treatment:
+
+- Focuses on managing symptoms and preventing flare-ups.
+- Moisturizers: Regular use of emollients and moisturizers helps keep the skin hydrated and reduce flare-ups.
+- Topical corticosteroids: These medications reduce inflammation and itching, but long-term use requires caution.
+- Immunomodulators: Calcineurin inhibitors like tacrolimus and pimecrolimus help moderate and severe cases.
+- Dupilumab: A biologic medication injected to treat moderate to severe eczema.
+- Phototherapy: Ultraviolet light therapy helps reduce inflammation and itching in some cases.
+- Lifestyle changes: Identifying and avoiding triggers, managing stress, and practicing good sleep hygiene can help manage eczema.
+
+Remember:
+
+- Eczema is a chronic condition, but effective management can greatly improve quality of life.
+- It's important to seek professional help for diagnosis and treatment tailored to your specific needs.
+- Consider joining support groups and online communities for information, resources, and emotional support.
+Caution:This is an estimated guess by our ML model,the final diagonse should be done by medical professional
+`;
+          break; 
+        
+        // default:
+        //   message = "No disease detected";
+      }
+      document.getElementById('result').innerText = message;
+    }
+
+    // Update the timer
+    function updateTimer() {
+      if (timer > 0) {
+        timer--;
+        document.getElementById('timer').innerText = `Time left: ${timer} seconds`;
+      }
+    }
+  </script>
+</body>
+</html>
